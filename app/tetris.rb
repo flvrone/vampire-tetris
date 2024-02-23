@@ -1,17 +1,17 @@
 # $gtk.reset
 
 module Tetris
-  BACKGROUND = [34, 33, 44].freeze
-  FRAME = [59, 58, 67].freeze
-  WHITE = [245, 245, 239].freeze
+  BACKGROUND = {r: 34, g: 33, b: 44}.freeze
+  FRAME = {r: 59, g: 58, b: 67}.freeze
+  WHITE = {r: 245, g: 245, b: 239}.freeze
 
-  BLUE = [40, 194, 255].freeze
-  GREEN = [138, 255, 128].freeze
-  PINK = [255, 128, 191].freeze
-  YELLOW = [255, 255, 128].freeze
-  PEACH = [255, 149, 128].freeze
-  CYAN = [128, 255, 234].freeze
-  VIOLET = [149, 128, 255].freeze
+  BLUE = {r: 40, g: 194, b: 255}.freeze
+  GREEN = {r: 138, g: 255, b: 128}.freeze
+  PINK = {r: 255, g: 128, b: 191}.freeze
+  YELLOW = {r: 255, g: 255, b: 128}.freeze
+  PEACH = {r: 255, g: 149, b: 128}.freeze
+  CYAN = {r: 128, g: 255, b: 234}.freeze
+  VIOLET = {r: 149, g: 128, b: 255}.freeze
 
   COLORS_INDEX = [
     BACKGROUND,

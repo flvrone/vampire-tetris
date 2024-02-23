@@ -42,7 +42,7 @@ module Tetris
     end
 
     def background
-      # out.solids << [0, 0, 1280, 720, *BACKGROUND]
+      # out.solids << {x: 0, y: 0, w: 1280, h: 720, **BACKGROUND}
       out.background_color = BACKGROUND
 
       (-1..@grid.width).each do |col|
@@ -63,25 +63,38 @@ module Tetris
     end
 
     def grid_cell_coordinates(col, row)
-      x = @grid_x + col * @box_size
-      y = @grid_y + row * @box_size
-      [x, y]
+      {
+        x: @grid_x + col * @box_size,
+        y: @grid_y + row * @box_size
+      }
     end
 
     def box_in_grid(col, row, color, solid: true)
-      x, y = grid_cell_coordinates(col, row)
+      x, y = grid_cell_coordinates(col, row).values
       solid ? box(x, y, color) : box_border(x, y, color)
     end
 
     def box(x, y, color, padding: 2)
       padded_size = @box_size - (padding * 2)
-      out.solids << [x + padding, y + padding, padded_size, padded_size, color]
+      out.solids << {
+        x: x + padding, y: y + padding,
+        w: padded_size, h: padded_size,
+        **color
+      }
     end
 
     def box_border(x, y, color, padding: 2)
       padded_size = @box_size - (padding * 2)
-      out.borders << [x + padding, y + padding, padded_size, padded_size, color]
-      out.borders << [x + padding + 1, y + padding + 1, padded_size - 2, padded_size - 2, color]
+      out.borders << {
+        x: x + padding, y: y + padding,
+        w: padded_size, h: padded_size,
+        **color
+      }
+      out.borders << {
+        x: x + padding + 1, y: y + padding + 1,
+        w: padded_size - 2, h: padded_size - 2,
+        **color
+      }
     end
 
     def spawn_shape
@@ -236,13 +249,25 @@ module Tetris
     end
 
     def render_speed
-      speed_label = (@speed == MAX_SPEED ? "MAX" : @speed)
-      out.labels << [*grid_cell_coordinates(-5.5, 21), "Speed: #{speed_label}", WHITE]
+      @speed_label ||= {
+        **grid_cell_coordinates(-5.5, 21),
+        **WHITE
+      }
+      speed_title = (@speed == MAX_SPEED ? "MAX" : @speed)
+      out.labels << {**@speed_label, text: "Speed: #{speed_title}"}
     end
 
     def render_score
-      out.labels << [*grid_cell_coordinates(-5.5, 20), "Lines: #{@lines}", WHITE]
-      out.labels << [*grid_cell_coordinates(-5.5, 19), "Score: #{@score}", WHITE]
+      @lines_label ||= {
+        **grid_cell_coordinates(-5.5, 20),
+        **WHITE
+      }
+      @score_label ||= {
+        **grid_cell_coordinates(-5.5, 19),
+        **WHITE
+      }
+      out.labels << {**@lines_label, text: "Lines: #{@lines}"}
+      out.labels << {**@score_label, text: "Score: #{@score}"}
     end
 
     def render_next_shape
@@ -252,21 +277,60 @@ module Tetris
 
     def render_pause
       render_overlay
-      out.labels << [*grid_cell_coordinates(5, 13), "Paused", 28, 1, WHITE]
+      @pause_label ||= {
+        **grid_cell_coordinates(5, 13),
+        text: "Paused",
+        size_enum: 28,
+        alignment_enum: 1,
+        **WHITE
+      }
+      out.labels << @pause_label
     end
 
     def render_game_over
       render_overlay
-      out.labels << [*grid_cell_coordinates(5, 16), "Game Over", 40, 1, WHITE]
-      out.labels << [*grid_cell_coordinates(5, 11.5), "Your score: #{@score}", 10, 1, WHITE]
-      out.labels << [*grid_cell_coordinates(5, 9.5), "Lines cleared: #{@lines}", 10, 1, WHITE]
-      out.labels << [*grid_cell_coordinates(5, 6.75), "Press `Enter` to restart", 8, 1, WHITE]
+      @game_over_label ||= {
+        **grid_cell_coordinates(5, 16),
+        text: "Game Over",
+        size_enum: 40,
+        alignment_enum: 1,
+        **WHITE
+      }
+      @game_over_score_label ||= {
+        **grid_cell_coordinates(5, 11.5),
+        size_enum: 10,
+        alignment_enum: 1,
+        **WHITE
+      }
+      @game_over_lines_label ||= {
+        **grid_cell_coordinates(5, 9.5),
+        size_enum: 10,
+        alignment_enum: 1,
+        **WHITE
+      }
+      @game_over_restart_label ||= {
+        **grid_cell_coordinates(5, 6.75),
+        text: "Press `Enter` to restart",
+        size_enum: 8,
+        alignment_enum: 1,
+        **WHITE
+      }
+      out.labels << @game_over_label
+      out.labels << {**@game_over_score_label, text: "Your score: #{@score}"}
+      out.labels << {**@game_over_lines_label, text: "Lines cleared: #{@lines}"}
+      out.labels << @game_over_restart_label
     end
 
     def render_overlay
-      width = 12 * @box_size
-      height = 25 * @box_size
-      out.solids << [@grid_x - @box_size, @grid_y - @box_size, width, height, *BACKGROUND, 240]
+      @overlay_solid ||= {
+        x: @grid_x - @box_size,
+        y: @grid_y - @box_size,
+        w: 12 * @box_size,
+        h: 25 * @box_size,
+        **BACKGROUND, a: 240
+      }
+
+      out.solids << @overlay_solid
     end
   end
 end
