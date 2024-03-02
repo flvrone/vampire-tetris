@@ -67,8 +67,12 @@ module Tetris
         @shape = shape
       end
 
-      def each_box(&block)
-        @shape.each_box(row: @shape.projection_bottom_row, &block)
+      def boxes
+        @boxes ||= @shape.boxes(row: @shape.projection_bottom_row)
+      end
+
+      def reset
+        @boxes = nil
       end
     end
 
@@ -79,8 +83,8 @@ module Tetris
         @row = row
       end
 
-      def each_box(&block)
-        @shape.each_box(col: @col, row: @row, &block)
+      def boxes
+        @boxes ||= @shape.boxes(col: @col, row: @row)
       end
     end
 
@@ -245,14 +249,12 @@ module Tetris
       false
     end
 
-    def can_be_placed_on?(col: col, row: row)
+    def can_be_placed_on?(col: @col, row: @row)
       return false if col < 0 || (col + width - 1 >= @grid.width) || row < 0
 
-      each_box(col: col, row: row) do |box_col, box_row, _|
-        return false if @grid.cell_occupied?(box_col, box_row)
+      boxes(col: col, row: row).none? do |b|
+        @grid.cell_occupied?(b.col, b.row)
       end
-
-      true
     end
 
     def can_descend?
@@ -288,18 +290,19 @@ module Tetris
 
     def reset_projection
       @projection_bottom_row = nil
+      projection.reset
     end
 
     def positioned_projection(col:, row:)
       PositionedProjection.new(self, col: col, row: row)
     end
 
-    def each_box(col: col, row: row)
-      @shape_array.each_with_index do |shape_row, row_index|
-        shape_row.each_with_index do |color_index, col_index|
+    def boxes(col: @col, row: @row)
+      @shape_array.flat_map.each_with_index do |shape_row, row_index|
+        shape_row.filter_map.each_with_index do |color_index, col_index|
           next if color_index == 0
 
-          yield(col + col_index, row + row_index, color_index)
+          Box.new(col + col_index, row + row_index, color_index)
         end
       end
     end

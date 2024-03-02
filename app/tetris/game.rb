@@ -2,6 +2,42 @@
 
 module Tetris
   class Game
+    class BoxRenderer
+      def initialize(size: 26, padding: 2, color_palette: COLORS_INDEX)
+        @size = size
+        @padding = padding
+        @padded_size = size - (padding * 2)
+        @colors_index = color_palette
+      end
+
+      attr_reader :size, :padding, :padded_size, :colors_index
+
+      def solid(x:, y:, color_index: nil)
+        color = (color_index && colors_index[color_index]) || colors_index[0]
+        {
+          x: x + padding, y: y + padding,
+          w: padded_size, h: padded_size,
+          **color
+        }
+      end
+
+      def border(x:, y:, color_index: nil)
+        color = (color_index && colors_index[color_index]) || colors_index[0]
+        [
+          {
+            x: x + padding, y: y + padding,
+            w: padded_size, h: padded_size,
+            **color
+          },
+          {
+            x: x + padding + 1, y: y + padding + 1,
+            w: padded_size - 2, h: padded_size - 2,
+            **color
+          }
+        ]
+      end
+    end
+
     SPEEDS =                       [48, 42, 36, 30, 24,  18,  12,   9, 6].freeze
     SPEED_CHANGE_LINES_MILESTONES = [5, 20, 40, 60, 80, 100, 120, 140].freeze
 
@@ -15,6 +51,7 @@ module Tetris
       @box_size = box_size
       @grid_x = grid_x || (1280 - @box_size * @grid.width) / 2
       @grid_y = grid_y || (720 - @box_size * (@grid.height + 1)) / 2
+      @box_renderer = BoxRenderer.new(size: box_size)
 
       @speed = start_speed
       @frames_per_move = SPEEDS[@speed]
@@ -44,21 +81,41 @@ module Tetris
     def background
       # out.solids << {x: 0, y: 0, w: 1280, h: 720, **BACKGROUND}
       out.background_color = BACKGROUND
+    end
 
-      (-1..@grid.width).each do |col|
-        box_in_grid(col, -1, FRAME)
-        box_in_grid(col, @grid.height, FRAME)
-      end
-
-      (0...@grid.height).each do |row|
-        box_in_grid(-1, row, FRAME)
-        box_in_grid(@grid.width, row, FRAME)
+    def frame_boxes
+      @frame_boxes ||= (0...@grid.width).map do |col|
+        box_in_grid(col, @grid.height)
       end
     end
 
-    def render_boxes(box_collection, **opts)
-      box_collection.each_box do |col, row, color_index|
-        box_in_grid(col, row, COLORS_INDEX[color_index], **opts)
+    def render_static_frame_boxes
+      return if @static_frame_rendered
+
+      out.static_solids <<
+        (0...@grid.width)
+        .map { |col| box_in_grid(col, -1) }
+        .concat(
+          (0...@grid.height).flat_map do |row|
+            [
+              box_in_grid(-1, row),
+              box_in_grid(@grid.width, row)
+            ]
+          end
+        )
+
+      @static_frame_rendered = true
+    end
+
+    def boxes_in_grid(box_collection)
+      box_collection.boxes.map do |b|
+        box_in_grid(b.col, b.row, b.color_index)
+      end
+    end
+
+    def box_borders_in_grid(box_collection)
+      box_collection.boxes.flat_map do |b|
+        box_border_in_grid(b.col, b.row, b.color_index)
       end
     end
 
@@ -69,32 +126,12 @@ module Tetris
       }
     end
 
-    def box_in_grid(col, row, color, solid: true)
-      x, y = grid_cell_coordinates(col, row).values
-      solid ? box(x, y, color) : box_border(x, y, color)
+    def box_in_grid(col, row, color_index = 0)
+      @box_renderer.solid(**grid_cell_coordinates(col, row), color_index: color_index)
     end
 
-    def box(x, y, color, padding: 2)
-      padded_size = @box_size - (padding * 2)
-      out.solids << {
-        x: x + padding, y: y + padding,
-        w: padded_size, h: padded_size,
-        **color
-      }
-    end
-
-    def box_border(x, y, color, padding: 2)
-      padded_size = @box_size - (padding * 2)
-      out.borders << {
-        x: x + padding, y: y + padding,
-        w: padded_size, h: padded_size,
-        **color
-      }
-      out.borders << {
-        x: x + padding + 1, y: y + padding + 1,
-        w: padded_size - 2, h: padded_size - 2,
-        **color
-      }
+    def box_border_in_grid(col, row, color_index = 0)
+      @box_renderer.border(**grid_cell_coordinates(col, row), color_index: color_index)
     end
 
     def spawn_shape
@@ -230,17 +267,17 @@ module Tetris
 
     def render
       background
+      render_static_frame_boxes
 
-      render_boxes(@grid)
-      render_boxes(@current_shape)
+      out.solids << frame_boxes + boxes_in_grid(@grid) + boxes_in_grid(@current_shape)
       return render_game_over if @game_over
 
       render_speed
       render_score
-      render_next_shape
+      out.solids << next_shape_boxes
       return render_pause if @pause
 
-      render_boxes(@current_shape.projection, solid: false)
+      out.borders << box_borders_in_grid(@current_shape.projection)
     end
 
     def tick
@@ -270,9 +307,9 @@ module Tetris
       out.labels << {**@score_label, text: "Score: #{@score}"}
     end
 
-    def render_next_shape
+    def next_shape_boxes
       @next_shape_projection ||= @next_shape.positioned_projection(col: 12, row: 19)
-      render_boxes(@next_shape_projection)
+      boxes_in_grid(@next_shape_projection)
     end
 
     def render_pause
@@ -327,10 +364,11 @@ module Tetris
         y: @grid_y - @box_size,
         w: 12 * @box_size,
         h: 25 * @box_size,
+        primitive_marker: :solid,
         **BACKGROUND, a: 240
       }
 
-      out.solids << @overlay_solid
+      out.primitives << @overlay_solid
     end
   end
 end

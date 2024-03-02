@@ -34,8 +34,8 @@ module Tetris
     end
 
     def plant_shape(shape)
-      shape.each_box do |col, row, color_index|
-        real_row(row)[col] = color_index
+      shape.boxes.each do |b|
+        real_row(b.row)[b.col] = b.color_index
       end
     end
 
@@ -68,12 +68,12 @@ module Tetris
       rows_to_clear
     end
 
-    def each_box
-      @grid_array.each_with_index do |grid_row, row_index|
-        grid_row.each_with_index do |color_index, col_index|
+    def boxes
+      @grid_array.flat_map.each_with_index do |grid_row, row_index|
+        grid_row.filter_map.each_with_index do |color_index, col_index|
           next if color_index == 0
 
-          yield(col_index, row_index, color_index)
+          Box.new(col_index, row_index, color_index)
         end
       end
     end

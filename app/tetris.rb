@@ -14,7 +14,7 @@ module Tetris
   VIOLET = {r: 149, g: 128, b: 255}.freeze
 
   COLORS_INDEX = [
-    BACKGROUND,
+    FRAME,
     BLUE,
     CYAN,
     GREEN,
@@ -26,6 +26,7 @@ module Tetris
   ].freeze
 end
 
+require_relative "tetris/box"
 require_relative "tetris/grid"
 require_relative "tetris/shape"
 require_relative "tetris/game"
