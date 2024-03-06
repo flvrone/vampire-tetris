@@ -2,7 +2,7 @@ devid=funkyloverone
 devtitle=Nazar Matus
 gameid=vampire-tetris
 gametitle=Vampire Tetris
-version=0.4
+version=0.5
 icon=metadata/icon.png
 
 # === Flags available at all licensing tiers ===
