@@ -12,16 +12,17 @@ module Tetris
 
       attr_reader :size, :padding, :padded_size, :colors_index
 
-      def solid(x:, y:, color_index: nil)
+      def sprite(x:, y:, color_index: nil)
         color = (color_index && colors_index[color_index]) || colors_index[0]
         {
+          path: :solid,
           x: x + padding, y: y + padding,
           w: padded_size, h: padded_size,
           **color
         }
       end
 
-      def border(x:, y:, color_index: nil)
+      def borders(x:, y:, color_index: nil)
         color = (color_index && colors_index[color_index]) || colors_index[0]
         [
           {
@@ -89,10 +90,18 @@ module Tetris
       end
     end
 
+    def grid_boxes
+      @grid_boxes ||= boxes_in_grid(@grid)
+    end
+
+    def reset_grid_boxes
+      @grid_boxes = nil
+    end
+
     def render_static_frame_boxes
       return if @static_frame_rendered
 
-      out.static_solids <<
+      out.static_sprites <<
         (0...@grid.width)
         .map { |col| box_in_grid(col, -1) }
         .concat(
@@ -127,11 +136,11 @@ module Tetris
     end
 
     def box_in_grid(col, row, color_index = 0)
-      @box_renderer.solid(**grid_cell_coordinates(col, row), color_index: color_index)
+      @box_renderer.sprite(**grid_cell_coordinates(col, row), color_index: color_index)
     end
 
     def box_border_in_grid(col, row, color_index = 0)
-      @box_renderer.border(**grid_cell_coordinates(col, row), color_index: color_index)
+      @box_renderer.borders(**grid_cell_coordinates(col, row), color_index: color_index)
     end
 
     def spawn_shape
@@ -251,6 +260,7 @@ module Tetris
       @lines += rows_to_clear.count
       @score += rows_to_clear.count**2
 
+      reset_grid_boxes
       prevent_planting
       spawn_shape
 
@@ -269,12 +279,13 @@ module Tetris
       background
       render_static_frame_boxes
 
-      out.solids << frame_boxes + boxes_in_grid(@grid) + boxes_in_grid(@current_shape)
+      out.sprites << frame_boxes
+      out.sprites << grid_boxes
+      out.sprites << boxes_in_grid(@current_shape)
       return render_game_over if @game_over
 
-      render_speed
-      render_score
-      out.solids << next_shape_boxes
+      render_stats
+      out.sprites << next_shape_boxes
       return render_pause if @pause
 
       out.borders << box_borders_in_grid(@current_shape.projection)
@@ -283,18 +294,14 @@ module Tetris
     def tick
       iterate
       render
+      # out.primitives << @args.gtk.framerate_diagnostics_primitives
     end
 
-    def render_speed
+    def render_stats
       @speed_label ||= {
         **grid_cell_coordinates(-5.5, 21),
         **WHITE
       }
-      speed_title = (@speed == MAX_SPEED ? "MAX" : @speed)
-      out.labels << {**@speed_label, text: "Speed: #{speed_title}"}
-    end
-
-    def render_score
       @lines_label ||= {
         **grid_cell_coordinates(-5.5, 20),
         **WHITE
@@ -303,8 +310,12 @@ module Tetris
         **grid_cell_coordinates(-5.5, 19),
         **WHITE
       }
-      out.labels << {**@lines_label, text: "Lines: #{@lines}"}
-      out.labels << {**@score_label, text: "Score: #{@score}"}
+      speed_title = (@speed == MAX_SPEED ? "MAX" : @speed)
+      out.labels << [
+        {**@speed_label, text: "Speed: #{speed_title}"},
+        {**@lines_label, text: "Lines: #{@lines}"},
+        {**@score_label, text: "Score: #{@score}"}
+      ]
     end
 
     def next_shape_boxes
@@ -352,23 +363,26 @@ module Tetris
         alignment_enum: 1,
         **WHITE
       }
-      out.labels << @game_over_label
-      out.labels << {**@game_over_score_label, text: "Your score: #{@score}"}
-      out.labels << {**@game_over_lines_label, text: "Lines cleared: #{@lines}"}
-      out.labels << @game_over_restart_label
+      out.labels << [
+        @game_over_label,
+        {**@game_over_score_label, text: "Your score: #{@score}"},
+        {**@game_over_lines_label, text: "Lines cleared: #{@lines}"},
+        @game_over_restart_label
+      ]
     end
 
     def render_overlay
-      @overlay_solid ||= {
+      @overlay_sprite ||= {
+        path: :solid,
         x: @grid_x - @box_size,
         y: @grid_y - @box_size,
         w: 12 * @box_size,
         h: 25 * @box_size,
-        primitive_marker: :solid,
+        primitive_marker: :sprite,
         **BACKGROUND, a: 240
       }
 
-      out.primitives << @overlay_solid
+      out.primitives << @overlay_sprite
     end
   end
 end
