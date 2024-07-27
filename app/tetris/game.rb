@@ -50,8 +50,8 @@ module Tetris
       @grid = Grid.new
 
       @box_size = box_size
-      @grid_x = grid_x || (1280 - @box_size * @grid.width) / 2
-      @grid_y = grid_y || (720 - @box_size * (@grid.height + 1)) / 2
+      @grid_x = grid_x || (args.grid.w - @box_size * @grid.width) / 2
+      @grid_y = grid_y || (args.grid.h - @box_size * (@grid.height + 1)) / 2
       @box_renderer = BoxRenderer.new(size: box_size)
 
       @speed = start_speed
@@ -89,7 +89,7 @@ module Tetris
     end
 
     def background
-      # out.solids << {x: 0, y: 0, w: 1280, h: 720, **BACKGROUND}
+      # out.solids << {x: 0, y: 0, w: args.grid.w, h: args.grid.h, **BACKGROUND}
       out.background_color = BACKGROUND
     end
 
