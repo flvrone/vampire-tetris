@@ -66,6 +66,7 @@ module Tetris
       @score = 0
       @pause = false
       @game_over = false
+      @should_reset = false
 
       @randomizer = Shape::TGMRandomizer.new
 
@@ -74,6 +75,14 @@ module Tetris
     end
 
     attr_reader :frames_per_move
+
+    def should_reset?
+      @should_reset
+    end
+
+    def should_reset!
+      @should_reset = true
+    end
 
     def out
       @args.outputs
@@ -165,7 +174,7 @@ module Tetris
 
     def handle_input
       if @game_over
-        @kb.key_down.enter && $gtk.reset
+        @kb.key_down.enter && should_reset!
         return
       end
 
