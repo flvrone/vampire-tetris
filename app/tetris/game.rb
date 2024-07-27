@@ -76,6 +76,10 @@ module Tetris
 
     attr_reader :frames_per_move
 
+    def out
+      @args.outputs
+    end
+
     def should_reset?
       @should_reset
     end
@@ -84,8 +88,8 @@ module Tetris
       @should_reset = true
     end
 
-    def out
-      @args.outputs
+    def cleanup!
+      out.clear
     end
 
     def background

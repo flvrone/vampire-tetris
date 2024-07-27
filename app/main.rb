@@ -6,6 +6,7 @@ def tick(args)
   args.state.game ||= new_game(args)
 
   if args.state.game.should_reset?
+    args.state.game.cleanup!
     args.state.game = new_game(args)
   end
 
