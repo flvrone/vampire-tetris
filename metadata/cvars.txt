@@ -17,3 +17,13 @@ log.filter_subsystems=HTTPServer
 #       game and wire it up to $gtk.request_quit
 #       OS Shortcuts for quitting such as ALT+F4 and CMD+Q will still work.
 # renderer.borderless=true
+
+# ==========================
+# In-Game web server.
+# ==========================
+# The in-game web server is disabled by default. To enable it, uncomment the lines
+# below. For remote hotload to work, the webserver needs to be enabled, must have
+# the port set to 9001, and remote_clients must be set to true.
+# webserver.enabled=true
+# webserver.port=9001
+# webserver.remote_clients=true

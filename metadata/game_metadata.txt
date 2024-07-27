@@ -8,7 +8,25 @@ icon=metadata/icon.png
 # === Flags available at all licensing tiers ===
 
 # Defines the render scale quality for sprites. scale_quality=0 (default) is nearest neighbor, scale_quality=1 is linear, scale_quality=2 is antialiased.
+# - 0: pixel perfect scaling (use this if your game uses pixel-art)
+# - 1: less blocky visuals,
+# - 2: higher computational overhead than linear, but provides the best visual quality
 # scale_quality=0
+
+# A comma delimited list of directories that should be ignored during the
+# publishing process. For example, if your game supports saves, you'd want to ignore
+# that directory (example format: ignore_directories=tmp,saves,dev,assets).
+#   IMPORTANT:
+#   Any directory that matches the ignore list will be ignored (REGARDLESS OF HIERARCHY).
+#   For example:
+#     ignore_directories value: saves
+#     Directory structure:
+#     - mygame
+#       - saves <---- This directory will be ignored
+#       - libs
+#         - saves <---- This directory will be ignored
+# ignore_directories=saves
+
 
 # === Flags available in DragonRuby Game Toolkit Pro ====
 
@@ -21,9 +39,15 @@ icon=metadata/icon.png
 # Setting this property to true will enable High DPI rendering (try in combination with scale_quality to see what looks best)
 # highdpi=false
 
-# === Portrait Mode ===
-# The orientation can be set to either landscape (1280x720) or portrait (720x1280)
+# === Orientation Portrait/Landscape ===
+# The orientation can be set to either landscape (1280x720) or portrait (720x1280). The default is ~landscape~.
 # orientation=landscape
+
+# === Orientation Override for Mobile ==
+# You can override the orientation of your game for mobile devices. If this value isn't provided, it which will use
+# the value from ~orientation=~. Valid values for the override are portrait, or landscape
+# orientation_android=inherit
+# orientation_ios=inherit
 
 # === HD Mode ===
 # HD Mode: when enabled, will give you 720p, 1080p, 1440p, 4k, and 5k rendering options
