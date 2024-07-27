@@ -312,15 +312,15 @@ module Tetris
 
     def render_stats
       @speed_label ||= {
-        **grid_cell_coordinates(-5.5, 21),
+        **grid_cell_coordinates(-6, 21),
         **WHITE
       }
       @lines_label ||= {
-        **grid_cell_coordinates(-5.5, 20),
+        **grid_cell_coordinates(-6, 20),
         **WHITE
       }
       @score_label ||= {
-        **grid_cell_coordinates(-5.5, 19),
+        **grid_cell_coordinates(-6, 19),
         **WHITE
       }
       speed_title = (@speed == MAX_SPEED ? "MAX" : @speed)
