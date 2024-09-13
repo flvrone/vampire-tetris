@@ -51,7 +51,7 @@ module Tetris
 
       @box_size = box_size
       @grid_x = grid_x || (args.grid.w - @box_size * @grid.width) / 2
-      @grid_y = grid_y || (args.grid.h - @box_size * (@grid.height + 1)) / 2
+      @grid_y = grid_y || (args.grid.h - @box_size * (@grid.height + 6))
       @box_renderer = BoxRenderer.new(size: box_size)
 
       @speed = start_speed

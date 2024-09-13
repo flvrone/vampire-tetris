@@ -41,7 +41,7 @@ icon=metadata/icon.png
 
 # === Orientation Portrait/Landscape ===
 # The orientation can be set to either landscape (1280x720) or portrait (720x1280). The default is ~landscape~.
-# orientation=landscape
+orientation=portrait
 
 # === Orientation Override for Mobile ==
 # You can override the orientation of your game for mobile devices. If this value isn't provided, it which will use
