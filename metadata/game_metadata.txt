@@ -1,4 +1,4 @@
-devid=funkyloverone
+devid=flvrone
 devtitle=Nazar Matus
 gameid=vampire-tetris
 gametitle=Vampire Tetris
