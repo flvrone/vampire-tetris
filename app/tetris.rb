@@ -30,4 +30,5 @@ require_relative "tetris/box"
 require_relative "tetris/grid"
 require_relative "tetris/shape"
 require_relative "tetris/game"
-
+require_relative "tetris/box_renderer"
+require_relative "tetris/game_renderer"
