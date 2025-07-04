@@ -189,20 +189,16 @@ module Tetris
 
       if @kb.key_down.up
         @current_shape.rotate && postpone_and_prevent_planting
-      end
-      if @kb.key_down.left || (@kb.key_held.left && held_key_check)
+      elsif @kb.key_down.left || (@kb.key_held.left && held_key_check)
         @current_shape.move_left && postpone_and_prevent_planting
         throttle_held_key(@kb.key_down.left)
-      end
-      if @kb.key_down.right || (@kb.key_held.right && held_key_check)
+      elsif @kb.key_down.right || (@kb.key_held.right && held_key_check)
         @current_shape.move_right && postpone_and_prevent_planting
         throttle_held_key(@kb.key_down.right)
-      end
-      if @kb.key_down.down || (@kb.key_held.down && held_key_check)
+      elsif @kb.key_down.down || (@kb.key_held.down && held_key_check)
         @current_shape.move_down && postpone_and_prevent_planting
         throttle_held_key(false)
-      end
-      if @kb.key_down.space
+      elsif @kb.key_down.space
         @current_shape.drop && hasten_planting
       end
     end
