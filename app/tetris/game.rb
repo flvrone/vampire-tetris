@@ -294,9 +294,9 @@ module Tetris
       return render_game_over if @game_over
 
       render_stats
-      out.sprites << next_shape_boxes
       return render_pause if @pause
 
+      out.sprites << next_shape_boxes
       out.borders << box_borders_in_grid(@current_shape.projection)
     end
 
